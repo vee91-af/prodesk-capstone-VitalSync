@@ -1,12 +1,41 @@
 "use client"
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '../lib/supabase'
 import Link from 'next/link'
+import { Activity, Calendar, BarChart, ShieldCheck } from 'lucide-react'
 
 export default function LandingPage() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        
+        if (profile) {
+          router.push(profile.role === 'doctor' ? '/dashboard' : '/patient-dashboard')
+        }
+      }
+    }
+    checkSession()
+  }, [router])
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       <nav className="flex items-center justify-between px-8 py-6 border-b border-zinc-100">
-        <h1 className="text-2xl font-extrabold text-blue-600 tracking-tight">VitalSync</h1>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+            <Activity size={20} />
+          </div>
+          <h1 className="text-2xl font-extrabold text-blue-600 tracking-tight">VitalSync</h1>
+        </div>
         <div className="space-x-4">
           <Link href="/login" className="text-zinc-600 font-medium hover:text-blue-600 transition">
             Sign In
@@ -43,21 +72,21 @@ export default function LandingPage() {
         <div className="mt-24 grid md:grid-cols-3 gap-8 text-left">
           <div className="p-8 bg-zinc-50 rounded-3xl border border-zinc-100">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
-              <span className="text-2xl">📅</span>
+              <Calendar className="text-blue-600" size={24} />
             </div>
             <h3 className="text-xl font-bold text-zinc-900">Smart Booking</h3>
             <p className="mt-2 text-zinc-500">Schedule appointments with specialists in just a few clicks.</p>
           </div>
           <div className="p-8 bg-zinc-50 rounded-3xl border border-zinc-100">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
-              <span className="text-2xl">📊</span>
+              <BarChart className="text-blue-600" size={24} />
             </div>
             <h3 className="text-xl font-bold text-zinc-900">Real-time Vitals</h3>
             <p className="mt-2 text-zinc-500">Monitor your heart rate, BP, and activity through our dashboard.</p>
           </div>
           <div className="p-8 bg-zinc-50 rounded-3xl border border-zinc-100">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-6">
-              <span className="text-2xl">🔐</span>
+              <ShieldCheck className="text-blue-600" size={24} />
             </div>
             <h3 className="text-xl font-bold text-zinc-900">Secure Records</h3>
             <p className="mt-2 text-zinc-500">Your medical data is encrypted and accessible only to you.</p>
